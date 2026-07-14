@@ -7,7 +7,8 @@
 <style>
 :root{
   --navy:#12355b;--blue:#1f6feb;--cyan:#12aeb8;--ink:#203040;--muted:#6b7785;
-  --line:#dbe4ee;--bg:#f3f7fb;--card:#fff;--green:#188a63;--shadow:0 14px 40px rgba(31,67,101,.10)
+  --line:#dbe4ee;--bg:#f3f7fb;--card:#fff;--green:#188a63;--red:#b42318;
+  --shadow:0 14px 40px rgba(31,67,101,.10)
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#edf6ff,#f7fafc);color:var(--ink);line-height:1.5}
@@ -48,6 +49,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);bo
 .consent{display:flex;gap:10px;align-items:flex-start;background:#eef8f5;border:1px solid #bfe1d4;padding:13px;border-radius:12px}
 .actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:18px}
 button.action{border:0;border-radius:11px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer}
+button.action:disabled{opacity:.65;cursor:not-allowed}
 .primary{background:linear-gradient(135deg,var(--blue),#0b9aa5);color:#fff}
 .secondary{background:#e8eef5;color:var(--navy)}
 .review{display:none;background:#f8fbfe;border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:16px}
@@ -56,6 +58,10 @@ button.action{border:0;border-radius:11px;padding:12px 18px;font:inherit;font-we
 .progress{height:8px;background:#e4ebf2;border-radius:99px;overflow:hidden;margin-top:10px}
 .progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan))}
 .status{font-size:.85rem;color:var(--muted);margin-top:6px}
+.message{display:none;margin-top:14px;padding:13px;border-radius:11px;font-weight:700}
+.message.show{display:block}
+.success{background:#eaf8f1;border:1px solid #a9d9c1;color:#176b49}
+.error{background:#fff0ef;border:1px solid #f0b8b2;color:var(--red)}
 footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
 @media(max-width:760px){
   .grid,.checks,.canvas{grid-template-columns:1fr}.full{grid-column:auto}
@@ -87,11 +93,8 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
         <div class="notice">Do not enter passwords, personal account credentials, home addresses, or other sensitive information.</div>
       </div>
 
-      <form id="surveyForm" action="https://formsubmit.co/m.jadid@kbs.sch.id" method="POST">
-        <input type="hidden" name="_subject" value="Grade 11 STEM - Skill Survey">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="text" name="_honey" style="display:none">
+      <form id="surveyForm">
+        <input type="hidden" name="formType" value="skillSurvey">
 
         <div class="section">
           <div class="head"><div class="num">1</div><div><h2>Student Profile</h2><p>Basic details for identifying your response.</p></div></div>
@@ -151,6 +154,8 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
             <button type="button" class="action secondary" id="surveyReviewBtn">Review Survey</button>
             <button type="submit" class="action primary">Submit Skill Survey</button>
           </div>
+          <div class="message success" id="surveySuccess">✅ Skill Survey submitted successfully.</div>
+          <div class="message error" id="surveyError">❌ Submission failed. Please check your internet connection and try again.</div>
           <div class="review" id="surveyReview"></div>
         </div>
       </form>
@@ -162,11 +167,8 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
         <p>Use this section after the ESP32 and IoT demonstration. Your idea may be ambitious, but it should solve a real problem and be possible to prototype.</p>
       </div>
 
-      <form id="dreamForm" action="https://formsubmit.co/m.jadid@kbs.sch.id" method="POST">
-        <input type="hidden" name="_subject" value="Grade 11 STEM - Dream Project Canvas">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="text" name="_honey" style="display:none">
+      <form id="dreamForm">
+        <input type="hidden" name="formType" value="dreamProject">
 
         <div class="section">
           <div class="head"><div class="num">1</div><div><h2>Student and Project Identity</h2><p>Identify the student and give the idea a memorable name.</p></div></div>
@@ -186,7 +188,7 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
         </div>
 
         <div class="section">
-          <div class="head"><div class="num">3</div><div><h2>System Idea</h2><p>Describe the possible input, process, output, connectivity, and intelligence.</p></div></div>
+          <div class="head"><div class="num">3</div><div><h2>System Idea</h2><p>Describe the possible input, output, connectivity, and intelligence.</p></div></div>
           <div class="canvas">
             <div class="box"><div class="field"><label>What should the system sense or receive?</label><textarea name="Possible Inputs and Sensors" placeholder="Temperature, distance, sound, image, button..."></textarea></div></div>
             <div class="box"><div class="field"><label>How should the system respond?</label><textarea name="Possible Outputs and Responses" placeholder="LED, alarm, motor, message, dashboard..."></textarea></div></div>
@@ -210,6 +212,8 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
             <button type="button" class="action secondary" id="dreamReviewBtn">Review Canvas</button>
             <button type="submit" class="action primary">Submit Dream Project Canvas</button>
           </div>
+          <div class="message success" id="dreamSuccess">✅ Dream Project Canvas submitted successfully.</div>
+          <div class="message error" id="dreamError">❌ Submission failed. Please check your internet connection and try again.</div>
           <div class="review" id="dreamReview"></div>
         </div>
       </form>
@@ -220,6 +224,8 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
 <footer>Grade 11 STEM · Muhammad Afta Jadid, S.Pd. · Kharisma Bangsa School of Global Education</footer>
 
 <script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXJAjKbgpP0nQtkioXr9RfltsuRvteX9ucL5l2GGOBn753xL_OXePAlnKwGRlOFpk5/exec";
+
 const tabs=document.querySelectorAll(".tab-btn");
 const panels=document.querySelectorAll(".tab-panel");
 tabs.forEach(btn=>btn.addEventListener("click",()=>{
@@ -274,9 +280,55 @@ function setupReview(buttonId,formId,reviewId,items){
 setupReview("surveyReviewBtn","surveyForm","surveyReview",[["Student","surveyName"],["Previous project","previousProject"],["Main learning goal","surveyGoal"]]);
 setupReview("dreamReviewBtn","dreamForm","dreamReview",[["Student","dreamName"],["Project title","projectTitle"],["Problem","problem"],["Target users","users"],["Success criteria","success"]]);
 
-document.querySelectorAll("form").forEach(form=>form.addEventListener("submit",()=>{
-  const b=form.querySelector('button[type="submit"]');b.disabled=true;b.textContent="Submitting...";
-}));
+async function submitForm(form, successId, errorId) {
+  const submitButton=form.querySelector('button[type="submit"]');
+  const success=document.getElementById(successId);
+  const error=document.getElementById(errorId);
+
+  success.classList.remove("show");
+  error.classList.remove("show");
+  submitButton.disabled=true;
+  const originalText=submitButton.textContent;
+  submitButton.textContent="Submitting...";
+
+  try {
+    const response=await fetch(WEB_APP_URL,{
+      method:"POST",
+      body:new FormData(form)
+    });
+
+    const text=await response.text();
+    let result=null;
+    try { result=JSON.parse(text); } catch (_) {}
+
+    if (!response.ok || (result && result.success === false)) {
+      throw new Error(result?.message || "Submission failed");
+    }
+
+    success.classList.add("show");
+    form.reset();
+    form.dispatchEvent(new Event("input"));
+  } catch (err) {
+    console.error(err);
+    error.textContent="❌ Submission failed: "+err.message;
+    error.classList.add("show");
+  } finally {
+    submitButton.disabled=false;
+    submitButton.textContent=originalText;
+  }
+}
+
+document.getElementById("surveyForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  if (!event.currentTarget.reportValidity()) return;
+  submitForm(event.currentTarget,"surveySuccess","surveyError");
+});
+
+document.getElementById("dreamForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  if (!event.currentTarget.reportValidity()) return;
+  submitForm(event.currentTarget,"dreamSuccess","dreamError");
+});
 </script>
 </body>
 </html>
