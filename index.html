@@ -93,7 +93,7 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
         <div class="notice">Do not enter passwords, personal account credentials, home addresses, or other sensitive information.</div>
       </div>
 
-      <form id="surveyForm">
+      <form id="surveyForm" action="https://script.google.com/macros/s/AKfycbyXJAjKbgpP0nQtkioXr9RfltsuRvteX9ucL5l2GGOBn753xL_OXePAlnKwGRlOFpk5/exec" method="POST" target="submissionFrame">
         <input type="hidden" name="formType" value="skillSurvey">
 
         <div class="section">
@@ -167,7 +167,7 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
         <p>Use this section after the ESP32 and IoT demonstration. Your idea may be ambitious, but it should solve a real problem and be possible to prototype.</p>
       </div>
 
-      <form id="dreamForm">
+      <form id="dreamForm" action="https://script.google.com/macros/s/AKfycbyXJAjKbgpP0nQtkioXr9RfltsuRvteX9ucL5l2GGOBn753xL_OXePAlnKwGRlOFpk5/exec" method="POST" target="submissionFrame">
         <input type="hidden" name="formType" value="dreamProject">
 
         <div class="section">
@@ -220,12 +220,11 @@ footer{text-align:center;color:var(--muted);font-size:.84rem;padding:24px}
     </section>
   </div>
 </main>
+<iframe name="submissionFrame" id="submissionFrame" style="display:none" title="Submission target"></iframe>
 
 <footer>Grade 11 STEM · Muhammad Afta Jadid, S.Pd. · Kharisma Bangsa School of Global Education</footer>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXJAjKbgpP0nQtkioXr9RfltsuRvteX9ucL5l2GGOBn753xL_OXePAlnKwGRlOFpk5/exec";
-
 const tabs=document.querySelectorAll(".tab-btn");
 const panels=document.querySelectorAll(".tab-panel");
 tabs.forEach(btn=>btn.addEventListener("click",()=>{
@@ -280,54 +279,55 @@ function setupReview(buttonId,formId,reviewId,items){
 setupReview("surveyReviewBtn","surveyForm","surveyReview",[["Student","surveyName"],["Previous project","previousProject"],["Main learning goal","surveyGoal"]]);
 setupReview("dreamReviewBtn","dreamForm","dreamReview",[["Student","dreamName"],["Project title","projectTitle"],["Problem","problem"],["Target users","users"],["Success criteria","success"]]);
 
-async function submitForm(form, successId, errorId) {
-  const submitButton=form.querySelector('button[type="submit"]');
-  const success=document.getElementById(successId);
-  const error=document.getElementById(errorId);
 
-  success.classList.remove("show");
-  error.classList.remove("show");
-  submitButton.disabled=true;
-  const originalText=submitButton.textContent;
-  submitButton.textContent="Submitting...";
+let activeSubmission = null;
 
-  try {
-    const response=await fetch(WEB_APP_URL,{
-      method:"POST",
-      body:new FormData(form)
-    });
+function prepareIframeSubmission(formId, successId, errorId) {
+  const form = document.getElementById(formId);
 
-    const text=await response.text();
-    let result=null;
-    try { result=JSON.parse(text); } catch (_) {}
-
-    if (!response.ok || (result && result.success === false)) {
-      throw new Error(result?.message || "Submission failed");
+  form.addEventListener("submit", event => {
+    if (!form.reportValidity()) {
+      event.preventDefault();
+      return;
     }
 
-    success.classList.add("show");
-    form.reset();
-    form.dispatchEvent(new Event("input"));
-  } catch (err) {
-    console.error(err);
-    error.textContent="❌ Submission failed: "+err.message;
-    error.classList.add("show");
-  } finally {
-    submitButton.disabled=false;
-    submitButton.textContent=originalText;
-  }
+    const submitButton = form.querySelector('button[type="submit"]');
+    const success = document.getElementById(successId);
+    const error = document.getElementById(errorId);
+
+    success.classList.remove("show");
+    error.classList.remove("show");
+
+    activeSubmission = {
+      form,
+      submitButton,
+      success,
+      originalText: submitButton.textContent
+    };
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+  });
 }
 
-document.getElementById("surveyForm").addEventListener("submit",event=>{
-  event.preventDefault();
-  if (!event.currentTarget.reportValidity()) return;
-  submitForm(event.currentTarget,"surveySuccess","surveyError");
-});
+prepareIframeSubmission("surveyForm", "surveySuccess", "surveyError");
+prepareIframeSubmission("dreamForm", "dreamSuccess", "dreamError");
 
-document.getElementById("dreamForm").addEventListener("submit",event=>{
-  event.preventDefault();
-  if (!event.currentTarget.reportValidity()) return;
-  submitForm(event.currentTarget,"dreamSuccess","dreamError");
+document.getElementById("submissionFrame").addEventListener("load", () => {
+  if (!activeSubmission) return;
+
+  const { form, submitButton, success, originalText } = activeSubmission;
+
+  success.textContent =
+    "✅ Response sent. Please check the Google Sheet to confirm it was recorded.";
+  success.classList.add("show");
+
+  form.reset();
+  form.dispatchEvent(new Event("input"));
+
+  submitButton.disabled = false;
+  submitButton.textContent = originalText;
+  activeSubmission = null;
 });
 </script>
 </body>
